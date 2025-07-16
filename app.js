@@ -11,9 +11,6 @@ var control = require('./modules/control');
 var app = express();
 var server = http.createServer(app);
 
-// Serve static files
-app.use(express.static(__dirname + '/public'));
-
 // Start socket.io control
 control.start(server);
 
