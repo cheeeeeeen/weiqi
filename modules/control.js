@@ -55,7 +55,7 @@ function addListener(){
 		};
 		socket.on('request', function(data){
 			if(players[socket.id].running){
-				sendMessage(players[socket.id], "notic", {
+				sendMessage(players[socket.id], "notice", {
 					errno: 1,
 					info: "请求已经发出过，请不要重复请求！"
 				});
@@ -94,7 +94,7 @@ function addListener(){
 			if(enemy){
 				enemy.running = false;
 				sendMessage(enemy, 'notice', {
-					error: 2,
+					errno: 2,
 					info: "对方已经下线 请重新连接"
 				});
 			}
@@ -108,7 +108,7 @@ function broad(type, data){
 	io.sockets.emit(type, data)
 }
 
-exports.start = function(app){
-	io = socket.createSocket(app);
+exports.start = function(server){
+	io = socket.createSocket(server);
 	addListener();
 }
