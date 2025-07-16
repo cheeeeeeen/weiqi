@@ -1,0 +1,208 @@
+.game-controls {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.game-controls h3 {
+  margin-bottom: 16px;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 8px;
+}
+
+.status-panel {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px 0;
+}
+
+.status-item:last-child {
+  margin-bottom: 0;
+}
+
+.status-item label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+.status-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.status-value.active {
+  background: #d4edda;
+  color: #155724;
+  animation: pulse 2s infinite;
+}
+
+.status-value.black {
+  background: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+.status-value.white {
+  background: rgba(255, 255, 255, 0.8);
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.game-info {
+  margin-bottom: 24px;
+}
+
+.game-info h4 {
+  margin-bottom: 12px;
+  color: #495057;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.game-active {
+  padding: 16px;
+  background: #e8f5e8;
+  border-radius: 8px;
+  border: 1px solid #c3e6c3;
+}
+
+.players {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: white;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.player.current-player {
+  border-color: #667eea;
+  background: #f0f4ff;
+  transform: scale(1.02);
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+}
+
+.stone {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.stone.black {
+  background: radial-gradient(circle at 30% 30%, #666, #000);
+  border: 1px solid #333;
+}
+
+.stone.white {
+  background: radial-gradient(circle at 30% 30%, #fff, #e0e0e0);
+  border: 1px solid #ccc;
+}
+
+.player span:last-child {
+  font-weight: 500;
+  color: #333;
+}
+
+.no-game {
+  padding: 20px;
+  text-align: center;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #dee2e6;
+  color: #6c757d;
+}
+
+.no-game p {
+  margin: 0;
+  font-style: italic;
+}
+
+.game-tips {
+  background: #fff3cd;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #ffeaa7;
+}
+
+.game-tips h4 {
+  margin-bottom: 12px;
+  color: #856404;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.game-tips ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.game-tips li {
+  padding: 4px 0;
+  font-size: 14px;
+  color: #856404;
+  position: relative;
+  padding-left: 16px;
+}
+
+.game-tips li::before {
+  content: '💡';
+  position: absolute;
+  left: 0;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .game-controls {
+    padding: 16px;
+  }
+  
+  .status-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .players {
+    gap: 8px;
+  }
+  
+  .player {
+    padding: 6px 10px;
+  }
+}
