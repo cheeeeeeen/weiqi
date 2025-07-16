@@ -1,9 +1,28 @@
 var socket = require("./socket");
+var WeiqiEngine = require("./weiqi-engine");
 
 var io = null;
 var players = {};
 var waitingPlayer = null;
+var games = {}; // 存储游戏状态
 function connectingDouble(black, white){
+	const gameId = `${black.id}_${white.id}`;
+	const engine = new WeiqiEngine();
+	
+	// 初始化游戏状态
+	games[gameId] = {
+		board: engine.createBoard(),
+		engine: engine,
+		blackPlayer: black,
+		whitePlayer: white,
+		currentColor: engine.BLACK, // 黑子先手
+		step: 0
+	};
+	
+	// 将游戏ID添加到玩家信息中
+	black.gameId = gameId;
+	white.gameId = gameId;
+	
 	white.socket.emit("connectPlayer", {
 		id: black.id,
 		name: black.name,
@@ -33,16 +52,60 @@ function doAction(player, data){
 		return;
 	}
 	
+	// 获取游戏状态
+	const game = games[player.gameId];
+	if (!game) {
+		sendMessage(player, "notice", {
+			errno: 3,
+			info: "游戏状态异常"
+		});
+		return;
+	}
+	
+	// 确定当前玩家颜色
+	const playerColor = (player.id === game.blackPlayer.id) ? game.engine.BLACK : game.engine.WHITE;
+	
+	// 检查是否轮到该玩家
+	if (game.currentColor !== playerColor) {
+		sendMessage(player, "notice", {
+			errno: 0,
+			info: "还未轮到您下子"
+		});
+		return;
+	}
+	
+	// 验证落子合法性
+	const moveResult = game.engine.makeMove(game.board, data.i, data.j, playerColor);
+	
+	if (!moveResult.valid) {
+		sendMessage(player, "notice", {
+			errno: 4,
+			info: "无效落子: " + moveResult.reason
+		});
+		return;
+	}
+	
+	// 落子成功，更新游戏状态
+	game.step++;
+	game.currentColor = (playerColor === game.engine.BLACK) ? game.engine.WHITE : game.engine.BLACK;
+	
 	var enemy = player.enemy;
 	enemy.action = true;
-	player.step ++;
+	player.action = false;
+	player.step++;
 	enemy.step = player.step;
-	sendMessage(enemy, "action", {
+	
+	// 发送落子结果给双方
+	const actionData = {
 		id: player.id,
 		step: player.step,
 		i: data.i,
-		j: data.j
-	});
+		j: data.j,
+		captured: moveResult.captured || [] // 被吃掉的棋子
+	};
+	
+	sendMessage(enemy, "action", actionData);
+	sendMessage(player, "actionConfirm", actionData); // 确认自己的落子
 }
 function addListener(){
 	io.sockets.on('connection', function (socket) {
@@ -90,7 +153,12 @@ function addListener(){
 			if(socket.id == waitingPlayer){
 				waitingPlayer = null;
 			}
-			var enemy = players[socket.id].enemy;
+			var player = players[socket.id];
+			if (player && player.gameId) {
+				// 清理游戏状态
+				delete games[player.gameId];
+			}
+			var enemy = player ? player.enemy : null;
 			if(enemy){
 				enemy.running = false;
 				sendMessage(enemy, 'notice', {

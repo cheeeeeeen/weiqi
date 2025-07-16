@@ -30,7 +30,7 @@ window.onload = function(){
 				if(method == 2){
 					//联机对战
 					if(network.isAction()){
-						unitOnClick(u, e);
+						// 只发送落子请求，不在前端执行落子逻辑
 						network.sendAction({
 							i: u.i,
 							j: u.j
@@ -91,6 +91,7 @@ window.onload = function(){
 		var id = null;
 		var isConnect = false;
 		var step = 0;
+		var playerColor = null; // 玩家颜色
 		socket = io.connect('http://'+HOST);
 		var action = false;
 		socket.on('notice', function(data){
@@ -104,7 +105,6 @@ window.onload = function(){
 			//下子
 			sendAction: function(data){
 				action = false;
-				step ++;
 				socket.emit("action", data);
 			},
 			//socket创建
@@ -117,25 +117,55 @@ window.onload = function(){
 			},
 			//对手下子
 			onAction: function(callback){
-				socket.on('action', function(data){
-					if(data.id == id){
-						//自己的步骤
-						return;
-					}
-					if(step+1 != data.step){
-						//服务器出现了数据错误同步
-						addInfo("出现数据丢失 sorry");
-						return;
-					}
-					step ++;
-					action = true;
-					callback && callback(data);
-				});
+		socket.on('action', function(data){
+			if(data.id == id){
+				//自己的步骤
+				return;
+			}
+			if(step+1 != data.step){
+				//服务器出现了数据错误同步
+				addInfo("出现数据丢失 sorry");
+				return;
+			}
+			step ++;
+			action = true;
+			
+			// 处理被吃掉的棋子
+			if (data.captured && data.captured.length > 0) {
+				for (const [ci, cj] of data.captured) {
+					map[ci][cj].removeFlag();
+					addInfo(`对方吃掉了 ${data.captured.length} 个棋子`);
+				}
+			}
+			
+			callback && callback(data);
+		});
+		
+		// 新增：监听自己落子的确认
+		socket.on('actionConfirm', function(data){
+			// 处理自己落子后被吃掉的对方棋子
+			if (data.captured && data.captured.length > 0) {
+				for (const [ci, cj] of data.captured) {
+					map[ci][cj].removeFlag();
+					addInfo(`你吃掉了 ${data.captured.length} 个棋子`);
+				}
+			}
+			// 显示自己的落子
+			const unit = map[data.i][data.j];
+			if(playerColor === "black") {
+				unit.addBlackFlag();
+			} else {
+				unit.addWhiteFlag();
+			}
+			step = data.step; // 同步步数
+			// action 保持 false，因为现在轮到对方
+		});
 			},
 			//连接上对手
 			onConnect: function(callback){
 				socket.on('connectPlayer', function(data){
 					isConnect = true;
+					playerColor = data.color === "black" ? "white" : "black"; // 对手颜色的相反
 					if(data.color != "black"){
 						addInfo("你是黑棋，轮到你先下子");
 						action = true;
@@ -180,6 +210,14 @@ window.onload = function(){
 				socket.emit("rename", {
 					name: name
 				});
+			},
+			//获取玩家ID
+			getId: function(){
+				return id;
+			},
+			//获取玩家颜色
+			getPlayerColor: function(){
+				return playerColor;
 			}
 		}
 	})();
@@ -495,7 +533,16 @@ window.onload = function(){
 
 	//联机对战事件监听
 	network.onAction(function(data){
-		unitOnClick(map[data.i][data.j]);
+		// 对手落子：直接显示，不进行规则校验
+		const unit = map[data.i][data.j];
+		if(data.id != network.getId()) {
+			// 对手的棋子
+			if(network.getPlayerColor() === "black") {
+				unit.addWhiteFlag(); // 我是黑棋，对手是白棋
+			} else {
+				unit.addBlackFlag(); // 我是白棋，对手是黑棋
+			}
+		}
 	});
 	network.onCreate();
 	network.onConnect(function(data){
