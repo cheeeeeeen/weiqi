@@ -7,7 +7,6 @@ window.onload = function(){
 	var judgeFlag = 1;
 	var stepCount = 0;
 	var endFlag = false;
-	var method = 2; //0-程序员模式 1-小白模式 2-联机模式
 	var Unit = function(i, j){
 		this.dom = T.dom.create("div", {
 			className: "unit"
@@ -24,23 +23,16 @@ window.onload = function(){
 		this.j = j;
 		var u = this;
 		T.on(this.dom, "click", function(e){
-				if(method == 0){
-					return;
+				//联机对战
+				if(network.isAction()){
+					// 只发送落子请求，不在前端执行落子逻辑
+					network.sendAction({
+						i: u.i,
+						j: u.j
+					});
+				}else{
+					addInfo("还未到你下子或者还没有连接到对手，请等待");
 				}
-				if(method == 2){
-					//联机对战
-					if(network.isAction()){
-						// 只发送落子请求，不在前端执行落子逻辑
-						network.sendAction({
-							i: u.i,
-							j: u.j
-						});
-					}else{
-						addInfo("还未到你下子或者还没有连接到对手，请等待");
-					}
-					return;
-				}
-				unitOnClick(u, e);
 			}
 		);
 		this.judgeFlag = 0;
@@ -412,81 +404,8 @@ window.onload = function(){
 		}
 	}
 
-	//AI
-	var blackAI, whiteAI;
-	var blackAIcode = T.g("blackAIcode");
-	var whiteAIcode = T.g("whiteAIcode");
-	T.on("loadBlackAI", "click", function(){
-		try{
-			eval(blackAIcode.value);
-			addInfo("加载成功");
-		}catch(e){
-			addInfo("不合法的AI");
-		}
-	});
-	T.on("loadWhiteAI", "click", function(){
-		try{
-			eval(whiteAIcode.value);
-			addInfo("加载成功");
-		}catch(e){
-			addInfo("不合法的AI");
-		}
-	});
-	T.on("start", "click", function(){
-		endFlag = false;
-		if(method == 0){
-			runAI();
-		}else{
-			addInfo("请调整到程序员模式使用AI对战");
-		}
-	});
-	function runAI(){
-		if(endFlag){
-			return;
-		}
-		var s;
-		if(currentFlag == 1){
-			s = blackAI({
-				currentFlag: currentFlag
-				,map: map
-			});
-		}else{
-			s = whiteAI({
-				currentFlag: currentFlag
-				,map: map
-			});
-		}
-		if(s){
-			unitOnClick(map[s.i][s.j]);
-		}
-		setTimeout(function(){
-			runAI();
-		},100);
-	}
-
-	//功能区
-	T.on("reset", "click", function(){
-		judgeFlag = 1;
-		stepCount = 0;
-		if(method == 0){
-			endFlag = true;
-		}else{
-			endFlag = false;
-		}
-		for(var i=0; i<19; i++){
-			for(var j=0; j<19; j++){
-				map[i][j].reset();
-			}
-		}
-		currentFlag = 1;
-	});
-
 	//点击请求对战对手
 	T.on("requestEnemy", "click", function(){
-		if(method != 2){
-			addInfo("请选择多人对战模式");
-			return ;
-		}
 		if(!network.isCreate()){
 			addInfo("还未成功连接上服务器，请稍后再试！");
 			return ;
@@ -500,23 +419,6 @@ window.onload = function(){
 		addInfo("请求已经发出，请等待!");
 		network.request(T.g("playerName").value);
 	})
-	T.on("method0", "click", function(e){
-		if(network.isConnect()){
-			addInfo("您正在多人对战中，该模式选择操作无效");
-			return;
-		}
-		method = 0;
-	});
-	T.on("method1", "click", function(){
-		if(network.isConnect()){
-			addInfo("您正在多人对战中，该模式选择操作无效");
-			return;
-		}
-		method = 1;
-	});
-	T.on("method2", "click", function(){
-		method = 2;
-	});
 	T.on("chatBtn", "click", function(){
 		var info = T.g("chatInput").value;
 		if(!info || info == ""){
