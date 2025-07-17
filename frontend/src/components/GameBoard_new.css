@@ -61,52 +61,50 @@
 .game-board {
   position: relative;
   background: #deb887;
-  padding: 30px;
+  padding: 20px;
   border-radius: 8px;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 510px; /* 18 * 25px + 60px padding */
-  height: 510px;
+  width: 450px;
+  height: 450px;
   display: grid;
   grid-template-columns: repeat(19, 25px);
   grid-template-rows: repeat(19, 25px);
 }
 
-/* 绘制19条垂直线 */
+/* 绘制18条垂直线（在列1-18之间） */
 .game-board::before {
   content: '';
   position: absolute;
-  top: 30px;
-  left: 30px;
-  width: 450px; /* 18 * 25px */
-  height: 450px;
+  top: 0;
+  left: 25px;
+  width: 400px;
+  height: 100%;
   background-image: repeating-linear-gradient(
     to right,
     #8B4513 0px,
     #8B4513 1px,
     transparent 1px,
     transparent 25px
-  ),
-  linear-gradient(to right, transparent 450px, #8B4513 450px, #8B4513 451px, transparent 451px);
+  );
   pointer-events: none;
   z-index: 1;
 }
 
-/* 绘制19条水平线 */
+/* 绘制18条水平线（在行1-18之间） */
 .game-board::after {
   content: '';
   position: absolute;
-  top: 30px;
-  left: 30px;
-  width: 450px;
-  height: 450px; /* 18 * 25px */
+  top: 25px;
+  left: 0;
+  width: 100%;
+  height: 400px;
   background-image: repeating-linear-gradient(
     to bottom,
     #8B4513 0px,
     #8B4513 1px,
     transparent 1px,
     transparent 25px
-  ),
-  linear-gradient(to bottom, transparent 450px, #8B4513 450px, #8B4513 451px, transparent 451px);
+  );
   pointer-events: none;
   z-index: 1;
 }
@@ -126,73 +124,28 @@
   z-index: 2;
 }
 
-/* hover触发区域 */
-.hover-area {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  left: 0px;
-  top: 0px;
-  transform: translate(-50%, -50%);
+.board-intersection:hover {
+  background-color: rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  z-index: 10;
-}
-
-/* hover效果 */
-.hover-area:hover + .hover-indicator,
-.board-intersection:hover .hover-indicator {
-  opacity: 1;
-}
-
-.hover-indicator {
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  left: 0px;
-  top: 0px;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-/* 黑棋hover效果 */
-.hover-indicator.black-hover {
-  background-color: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* 白棋hover效果 */
-.hover-indicator.white-hover {
-  background-color: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.3);
 }
 
 /* 星位标记 - 第4,10,16条线的交点（索引3,9,15） */
 .board-intersection.star-point::before {
   content: '';
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
   background: #8B4513;
   border-radius: 50%;
   z-index: 3;
-  left: 0px;
-  top: 0px;
-  transform: translate(-50%, -50%);
 }
 
 /* 棋子样式 */
 .stone {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  transform: translate(-50%, -50%);
+  position: relative;
   z-index: 4;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
@@ -201,14 +154,14 @@
 
 @keyframes placeStone {
   0% {
-    transform: translate(-50%, -50%) scale(0);
+    transform: scale(0);
     opacity: 0;
   }
   50% {
-    transform: translate(-50%, -50%) scale(1.2);
+    transform: scale(1.2);
   }
   100% {
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
     opacity: 1;
   }
 }
@@ -224,48 +177,42 @@
 }
 
 .stone:hover {
-  transform: translate(-50%, -50%) scale(1.05);
+  transform: scale(1.05);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .game-board {
-    width: 410px;
-    height: 410px;
+    width: 360px;
+    height: 360px;
     grid-template-columns: repeat(19, 20px);
     grid-template-rows: repeat(19, 20px);
-    padding: 25px;
+    padding: 15px;
   }
   
   .game-board::before {
-    top: 25px;
-    left: 25px;
-    width: 360px; /* 18 * 20px */
-    height: 360px;
+    left: 20px;
+    width: 320px;
     background-image: repeating-linear-gradient(
       to right,
       #8B4513 0px,
       #8B4513 1px,
       transparent 1px,
       transparent 20px
-    ),
-    linear-gradient(to right, transparent 360px, #8B4513 360px, #8B4513 361px, transparent 361px);
+    );
   }
   
   .game-board::after {
-    top: 25px;
-    left: 25px;
-    width: 360px;
-    height: 360px; /* 18 * 20px */
+    top: 20px;
+    height: 320px;
     background-image: repeating-linear-gradient(
       to bottom,
       #8B4513 0px,
       #8B4513 1px,
       transparent 1px,
       transparent 20px
-    ),
-    linear-gradient(to bottom, transparent 360px, #8B4513 360px, #8B4513 361px, transparent 361px);
+    );
   }
   
   .board-intersection {
@@ -274,8 +221,8 @@
   }
   
   .stone {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
   
   .board-info {
@@ -286,41 +233,35 @@
 
 @media (max-width: 480px) {
   .game-board {
-    width: 310px;
-    height: 310px;
+    width: 288px;
+    height: 288px;
     grid-template-columns: repeat(19, 16px);
     grid-template-rows: repeat(19, 16px);
-    padding: 20px;
+    padding: 12px;
   }
   
   .game-board::before {
-    top: 20px;
-    left: 20px;
-    width: 288px; /* 18 * 16px */
-    height: 288px;
+    left: 16px;
+    width: 256px;
     background-image: repeating-linear-gradient(
       to right,
       #8B4513 0px,
       #8B4513 1px,
       transparent 1px,
       transparent 16px
-    ),
-    linear-gradient(to right, transparent 288px, #8B4513 288px, #8B4513 289px, transparent 289px);
+    );
   }
   
   .game-board::after {
-    top: 20px;
-    left: 20px;
-    width: 288px;
-    height: 288px; /* 18 * 16px */
+    top: 16px;
+    height: 256px;
     background-image: repeating-linear-gradient(
       to bottom,
       #8B4513 0px,
       #8B4513 1px,
       transparent 1px,
       transparent 16px
-    ),
-    linear-gradient(to bottom, transparent 288px, #8B4513 288px, #8B4513 289px, transparent 289px);
+    );
   }
   
   .board-intersection {
@@ -329,7 +270,7 @@
   }
   
   .stone {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
   }
 }

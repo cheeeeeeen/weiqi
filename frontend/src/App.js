@@ -41,17 +41,21 @@ function App() {
     });
 
     socket.on('connectPlayer', (data) => {
+      const myPlayerColor = data.color === 'black' ? 'white' : 'black';
+      
       setPlayerInfo(prev => ({
         ...prev,
         isConnected: true,
         enemy: data,
-        canMove: data.color !== 'black', // 黑棋先手
-        playerColor: data.color === 'black' ? 'white' : 'black'
+        canMove: data.color !== 'black' // 如果对手是黑棋，那么自己是白棋，不能先手；如果对手是白棋，那么自己是黑棋，可以先手
       }));
+      
       setGameState(prev => ({
         ...prev,
-        isGameActive: true
+        isGameActive: true,
+        playerColor: myPlayerColor
       }));
+      
       addMessage(`已连接到对手: ${data.name}`);
       if (data.color !== 'black') {
         addMessage('你是黑棋，轮到你先下子');
@@ -90,7 +94,7 @@ function App() {
 
   const addMessage = (text, type = 'system') => {
     setMessages(prev => [...prev, {
-      id: Date.now(),
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // 确保唯一性
       text,
       type,
       timestamp: new Date().toLocaleTimeString()
@@ -102,7 +106,7 @@ function App() {
       const newBoard = prev.board.map(row => [...row]);
       
       // 放置对手的棋子
-      const opponentColor = playerInfo.playerColor === 'black' ? 2 : 1;
+      const opponentColor = prev.playerColor === 'black' ? 2 : 1;
       newBoard[data.i][data.j] = opponentColor;
       
       // 处理被吃掉的棋子
@@ -117,7 +121,7 @@ function App() {
         ...prev,
         board: newBoard,
         step: data.step,
-        currentPlayer: playerInfo.playerColor === 'black' ? 1 : 2
+        currentPlayer: prev.playerColor === 'black' ? 1 : 2
       };
     });
 
@@ -131,8 +135,9 @@ function App() {
     setGameState(prev => {
       const newBoard = prev.board.map(row => [...row]);
       
-      // 放置自己的棋子
-      const ownColor = playerInfo.playerColor === 'black' ? 1 : 2;
+      // 放置自己的棋子 - 使用gameState中的playerColor
+      const currentPlayerColor = prev.playerColor;
+      const ownColor = currentPlayerColor === 'black' ? 1 : 2;
       newBoard[data.i][data.j] = ownColor;
       
       // 处理被吃掉的棋子
@@ -147,7 +152,7 @@ function App() {
         ...prev,
         board: newBoard,
         step: data.step,
-        currentPlayer: playerInfo.playerColor === 'black' ? 2 : 1
+        currentPlayer: currentPlayerColor === 'black' ? 2 : 1
       };
     });
 
@@ -222,7 +227,7 @@ function App() {
           <GameBoard 
             board={gameState.board}
             onCellClick={handleCellClick}
-            playerColor={playerInfo.playerColor}
+            playerColor={gameState.playerColor}
             currentPlayer={gameState.currentPlayer}
           />
         </div>
